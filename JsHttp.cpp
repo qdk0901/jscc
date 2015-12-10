@@ -25,7 +25,12 @@ void JsHttpRequest::ParseUrl(char* url, char* host, int* port, char* path)
             strncpy(host, url + u.field_data[UF_HOST].off, u.field_data[UF_HOST].len);  
 		
 		if (u.field_set & (1 << UF_PATH))
-            strncpy(path, url+u.field_data[UF_PATH].off, u.field_data[UF_PATH].len);
+            strncpy(path, url + u.field_data[UF_PATH].off, u.field_data[UF_PATH].len);
+			
+		if (u.field_set & (1 << UF_QUERY)) {
+			strcat(path, "?");
+			strncpy(path + strlen(path), url + u.field_data[UF_QUERY].off, u.field_data[UF_QUERY].len);
+		}
 	}	
 }
 
@@ -74,6 +79,12 @@ void JsHttpRequest::Read(int events)
 		parser->data = this;
 		size = http_parser_execute(parser, &settings, buffer, buffer_index);
 		
+		if (parser->content_length == 0) {
+			//no body, OnBodyCallback will not called
+			//call js callback directly here
+			CallBack(parser->status_code, "");
+		}
+		
 		ev_io_stop(loop, &watcher);
 		close(sock);
 		
@@ -96,9 +107,13 @@ int JsHttpRequest::SendRequest(char* host, short port, char* data, jerry_api_obj
 	
 	h = gethostbyname(host);
 	
+	if (!h)
+		return -errno;
+	
 	memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
+	
     memcpy(&addr.sin_addr.s_addr, h->h_addr, h->h_length);
 	
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -146,10 +161,14 @@ bool JsHttp::METHOD(Get)
 	
 	JsHttpRequest::ParseUrl(url, host, &port, path);
 	
-	sprintf(req, "GET /%s HTTP/1.0\r\n\r\n", path);
+	sprintf(req, "GET %s HTTP/1.0\r\n\r\n", path);
 	
 	JsHttpRequest* jsr = new JsHttpRequest();
-	jsr->SendRequest(host, port, req, jerry_api_acquire_object(args_p[1].v_object));
+	int size = jsr->SendRequest(host, port, req, jerry_api_acquire_object(args_p[1].v_object));
+	
+	if (size < 0) {
+		jsr->CallBack(500, "");
+	}
 
 	return true;
 }

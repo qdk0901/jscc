@@ -1,23 +1,22 @@
 print('start jscc');
 
 /*
-Http.get('http://www.baidu.com', function(err, data) {
-	if (err == 200) {
-		print(data);
-	}
-});
+
 */
 
-/*
-Timer.once(1.0, function() {
-	print('once timer handler called');
-});
-*/
+function timerHandler() {
+	Http.get('http://127.0.0.1:8089/?cmd=1234', function(err, data) {
+		if (err == 200) {
+			print(data);
+		} else {
+			print(err);
+		}
+	});
 	
-Timer.repeat(1.0, function() {
-	print('repeat timer handler called');
-});
+	Timer.once(1.0, timerHandler);
+}
 
+Timer.once(1.0, timerHandler);
 
 /*
 var uart = Uart.open('/dev/ttyS2', function(data) {
