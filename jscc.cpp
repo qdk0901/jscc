@@ -9,12 +9,10 @@
 #include "jerry-port.h"
 
 #include "libev/ev.h"
-#include "utils.h"
-#include "uart.h"
-#include "http.h"
 #include "JsObject.h"
 #include "JsUart.h"
 #include "JsHttp.h"
+#include "JsTimer.h"
 
 int jerry_port_logmsg (FILE* stream, const char* format, ...)
 {
@@ -48,8 +46,8 @@ int main(int argc, char **argv)
 	jerry_init (0);
 	
 	JsUart::Register();
-	
 	JsHttp::Register();
+	JsTimer::Register();
 	
 	JsObject::EvalJsFile("jscc.js");
 	

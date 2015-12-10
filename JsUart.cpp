@@ -105,11 +105,12 @@ bool JsUart::METHOD(Close)
 {
 	JsUart* uart = (JsUart*)JsObject::GetInt32(this_p->v_object, "_this");
 	struct ev_loop* loop = ev_default_loop(0);
+	jerry_api_release_object(uart->callback);
 	
 	ev_io_stop(loop, &uart->watcher);
 	close(uart->fd);
 	
-	jerry_api_release_object(uart->callback);
+	delete uart;
 }
 
 bool JsUart::METHOD(Open)

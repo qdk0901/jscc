@@ -171,6 +171,7 @@ SOURCES = \
 	JsObject.cpp \
 	JsUart.cpp \
 	JsHttp.cpp \
+	JsTimer.cpp \
 	jscc.cpp
 
 TARGET = jscc

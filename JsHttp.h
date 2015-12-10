@@ -15,6 +15,16 @@ private:
 	int buffer_index = 0;
 	
 public:
+	JsHttpRequest() {
+		callback = NULL;
+	}
+	
+	~JsHttpRequest() {
+		if (callback != NULL) {
+			jerry_api_release_object(callback);
+		}
+	}
+	
 	int sock;
 	ev_io watcher;
 	jerry_api_object_t* callback;

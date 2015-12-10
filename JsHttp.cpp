@@ -42,7 +42,6 @@ void JsHttpRequest::CallBack(int status_code, const char* data)
 	int is_ok = jerry_api_call_function(callback, NULL, &res, val, 2);
 	
 	jerry_api_release_string(val[1].v_string);	
-	jerry_api_release_object(callback);	
 }
 
 int JsHttpRequest::OnBodyCallback(http_parser* parser, const char *at, size_t length)
